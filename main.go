@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-var rspamdURL string
+var rspamdURL = flag.String("url", "http://127.0.0.1:11333", "rspamd control url")
 
 type rspamdResponse struct {
 	Action string
@@ -20,7 +20,7 @@ type rspamdResponse struct {
 func rspamdRequest() {
 	// protocol: https://rspamd.com/doc/architecture/protocol.html
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/checkv2", rspamdURL), bufio.NewReader(os.Stdin))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/checkv2", *rspamdURL), bufio.NewReader(os.Stdin))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -58,7 +58,6 @@ func rspamdRequest() {
 }
 
 func main() {
-	flag.StringVar(&rspamdURL, "url", "http://127.0.0.1:11333", "rspamd control url")
 	flag.Parse()
 	rspamdRequest()
 }
