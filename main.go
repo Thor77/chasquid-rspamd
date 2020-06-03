@@ -17,12 +17,14 @@ type rspamdResponse struct {
 	Score  float32
 }
 
-func rspamdRequest() {
+func rspamdRequest() (rspamdResponse, error) {
+	decodedResp := rspamdResponse{}
+
 	// protocol: https://rspamd.com/doc/architecture/protocol.html
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/checkv2", *rspamdURL), bufio.NewReader(os.Stdin))
 	if err != nil {
-		log.Fatalln(err)
+		return decodedResp, err
 	}
 
 	req.Header.Add("Pass", "all")
@@ -35,18 +37,27 @@ func rspamdRequest() {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		return decodedResp, err
 	}
 
-	decodedResp := rspamdResponse{}
 	if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
+		return decodedResp, err
+	}
+
+	return decodedResp, nil
+}
+
+func main() {
+	flag.Parse()
+	response, err := rspamdRequest()
+	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("X-Spam-Action: %s\n", decodedResp.Action)
-	fmt.Printf("X-Spam-Score: %f\n", decodedResp.Score)
+	fmt.Printf("X-Spam-Action: %s\n", response.Action)
+	fmt.Printf("X-Spam-Score: %f\n", response.Score)
 
-	switch decodedResp.Action {
+	switch response.Action {
 	case "reject":
 		// hard reject
 		os.Exit(20)
@@ -54,10 +65,4 @@ func rspamdRequest() {
 		// greylist
 		os.Exit(75)
 	}
-
-}
-
-func main() {
-	flag.Parse()
-	rspamdRequest()
 }
