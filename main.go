@@ -55,15 +55,17 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("X-Spam-Action: %s\n", response.Action)
-	fmt.Printf("X-Spam-Score: %f\n", response.Score)
-
 	switch response.Action {
 	case "reject":
 		// hard reject
+		fmt.Println("no.")
 		os.Exit(20)
 	case "soft reject":
 		// greylist
+		fmt.Println("greylisted, please try again later")
 		os.Exit(75)
+	default:
+		fmt.Printf("X-Spam-Action: %s\n", response.Action)
+		fmt.Printf("X-Spam-Score: %f\n", response.Score)
 	}
 }
