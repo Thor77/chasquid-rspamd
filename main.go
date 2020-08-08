@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,12 +18,12 @@ type rspamdResponse struct {
 	Score  float32
 }
 
-func rspamdRequest() (rspamdResponse, error) {
+func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 	decodedResp := rspamdResponse{}
 
 	// protocol: https://rspamd.com/doc/architecture/protocol.html
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/checkv2", *rspamdURL), bufio.NewReader(os.Stdin))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/checkv2", url), body)
 	if err != nil {
 		return decodedResp, err
 	}
@@ -49,7 +50,7 @@ func rspamdRequest() (rspamdResponse, error) {
 
 func main() {
 	flag.Parse()
-	response, err := rspamdRequest()
+	response, err := rspamdRequest(*rspamdURL, bufio.NewReader(os.Stdin))
 	if err != nil {
 		log.Fatalln(err)
 	}
