@@ -64,8 +64,10 @@ func main() {
 		// greylist
 		fmt.Println("greylisted, please try again later")
 		os.Exit(75)
-	default:
-		fmt.Printf("X-Spam-Action: %s\n", response.Action)
-		fmt.Printf("X-Spam-Score: %f\n", response.Score)
+	case "add header":
+		fmt.Println("X-Spam: Yes")
 	}
+
+	fmt.Printf("X-Spam-Action: %s\n", response.Action)
+	fmt.Printf("X-Spam-Score: %f\n", response.Score)
 }
