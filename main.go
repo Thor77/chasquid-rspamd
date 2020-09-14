@@ -13,10 +13,18 @@ import (
 )
 
 var rspamdURL = flag.String("url", "http://127.0.0.1:11333", "rspamd control url")
+var extendedStats = flag.Bool("extended", false, "report extended stats in X-Spamd-Result header")
+
+type rspamdSymbol struct {
+	Score   float32
+	Options []string
+}
 
 type rspamdResponse struct {
-	Action string
-	Score  float32
+	Action        string
+	Score         float32
+	RequiredScore float32 `json:"required_score"`
+	Symbols       map[string]rspamdSymbol
 }
 
 func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
@@ -62,6 +70,20 @@ func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 	return decodedResp, nil
 }
 
+func formatSymbol(name string, symbol rspamdSymbol) string {
+	return fmt.Sprintf("%s(%.2f)[%s]", name, symbol.Score, strings.Join(symbol.Options, ", "))
+}
+
+func formatSymbols(symbols map[string]rspamdSymbol) []string {
+	var symbolStrings = make([]string, len(symbols))
+	i := 0
+	for key, value := range symbols {
+		symbolStrings[i] = formatSymbol(key, value)
+		i++
+	}
+	return symbolStrings
+}
+
 func main() {
 	flag.Parse()
 	response, err := rspamdRequest(*rspamdURL, bufio.NewReader(os.Stdin))
@@ -84,5 +106,19 @@ func main() {
 	}
 
 	fmt.Printf("X-Spam-Action: %s\n", response.Action)
-	fmt.Printf("X-Spam-Score: %.2f\n", response.Score)
+	if *extendedStats {
+		fmt.Printf("X-Spamd-Result: default: False [%.2f / %.2f];\n", response.Score, response.RequiredScore)
+		symbolStrings := formatSymbols(response.Symbols)
+		for i, symbolString := range symbolStrings {
+			var lineEnd string
+			if i >= len(symbolStrings)-1 {
+				lineEnd = "\n"
+			} else {
+				lineEnd = ";\n"
+			}
+			fmt.Printf("\t%s%s", symbolString, lineEnd)
+		}
+	} else {
+		fmt.Printf("X-Spam-Score: %.2f\n", response.Score)
+	}
 }
