@@ -31,11 +31,9 @@ func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 
 	req.Header.Add("Pass", "all")
 	// add some metadata as headers
-	auth, authPresent := os.LookupEnv("AUTH_AS")
-	if authPresent {
-		if auth != "" {
-			req.Header.Add("User", auth)
-		}
+	user := os.Getenv("AUTH_AS")
+	if user != "" {
+		req.Header.Add("User", user)
 	}
 	remoteAddr := os.Getenv("REMOTE_ADDR")
 	var ip string
