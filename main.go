@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/mail"
 	"os"
 )
 
@@ -35,6 +36,12 @@ func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 		req.Header.Add("User", auth)
 	}
 	req.Header.Add("Ip", os.Getenv("REMOTE_ADDR"))
+	addr, err := mail.ParseAddress(os.Getenv("MAIL_FROM"))
+	if err != nil {
+		return decodedResp, err
+	}
+	req.Header.Add("From", addr.Address)
+	req.Header.Add("Helo", os.Getenv("EHLO_DOMAIN"))
 
 	resp, err := client.Do(req)
 	if err != nil {
