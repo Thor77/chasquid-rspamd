@@ -86,5 +86,5 @@ func main() {
 	}
 
 	fmt.Printf("X-Spam-Action: %s\n", response.Action)
-	fmt.Printf("X-Spam-Score: %f\n", response.Score)
+	fmt.Printf("X-Spam-Score: %.2f\n", response.Score)
 }
