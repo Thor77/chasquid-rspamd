@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/mail"
 	"os"
@@ -59,7 +58,8 @@ func main() {
 	flag.Parse()
 	response, err := rspamdRequest(*rspamdURL, bufio.NewReader(os.Stdin))
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println("spam checking failed; try again later")
+		os.Exit(75)
 	}
 
 	switch response.Action {
