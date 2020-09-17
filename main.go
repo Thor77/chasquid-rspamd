@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/mail"
 	"os"
+	"strings"
 )
 
 var rspamdURL = flag.String("url", "http://127.0.0.1:11333", "rspamd control url")
@@ -34,7 +35,14 @@ func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 	if authPresent {
 		req.Header.Add("User", auth)
 	}
-	req.Header.Add("Ip", os.Getenv("REMOTE_ADDR"))
+	remoteAddr := os.Getenv("REMOTE_ADDR")
+	var ip string
+	if remoteAddr[0] == '[' {
+		ip = strings.Split(strings.Split(remoteAddr, "]")[0], "[")[1]
+	} else {
+		ip = strings.Split(remoteAddr, ":")[0]
+	}
+	req.Header.Add("Ip", ip)
 	addr, err := mail.ParseAddress(os.Getenv("MAIL_FROM"))
 	if err != nil {
 		return decodedResp, err
