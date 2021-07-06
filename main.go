@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/mail"
 	"os"
@@ -49,6 +50,11 @@ func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 	}
 	req.Header.Add("From", addr.Address)
 	req.Header.Add("Helo", os.Getenv("EHLO_DOMAIN"))
+
+	names, err := net.LookupAddr(ip)
+	if err == nil && len(names) > 0 {
+		req.Header.Add("Hostname", names[0])
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
