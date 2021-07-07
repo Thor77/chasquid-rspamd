@@ -61,11 +61,9 @@ func rspamdRequest(url string, body io.Reader) (rspamdResponse, error) {
 		return decodedResp, err
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
-		return decodedResp, err
-	}
+	err = json.NewDecoder(resp.Body).Decode(&decodedResp)
 
-	return decodedResp, nil
+	return decodedResp, err
 }
 
 func main() {
