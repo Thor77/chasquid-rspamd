@@ -1,0 +1,36 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+- env:
+  - CGO_ENABLED=0
+- goos:
+  - linux
+  goarch:
+  - amd64
+  - 386
+archives:
+- replacements:
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+nfpms:
+  -
+    id: deb
+    package_name: chasquid-rspamd
+    homepage: https://github.com/Thor77/chasquid-rspamd
+    maintainer: Thor77 <thor77@thor77.org>
+    description: Chasquid hook for rspamd
+    license: MIT
+    formats:
+      - deb
+    bindir: /usr/bin
