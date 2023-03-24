@@ -1,3 +1,3 @@
 module github.com/thor77/chasquid-rspamd
 
-go 1.17
+go 1.20
